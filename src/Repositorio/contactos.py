@@ -1,4 +1,5 @@
 from src.Configuracion.constantes import *
+from src.Modelos.contactos import Contacto
 
 def convertir_a_bytes(contacto):
 
@@ -30,3 +31,43 @@ def validar_tamanos(contacto):
         return False
 
     return True
+
+def guardar_contacto(contacto):
+    registro = convertir_a_bytes(contacto)
+
+    if registro is None:
+        return False
+
+    with open("datos/contactos.dat", "ab") as archivo:
+        archivo.write(registro)
+
+    return True
+
+def leer_registro(numero_registro):
+    with open("datos/contactos.dat", "rb") as archivo:
+        archivo.seek(numero_registro * TAMANIO_REGISTRO)
+
+        posicion = archivo.tell()
+
+        registro = archivo.read(TAMANIO_REGISTRO)
+
+        return posicion, registro
+
+def convertir_a_contacto(registro):
+    posicion = 0
+
+    id = int(registro[posicion:posicion + ID_BYTES].decode("utf-8").strip())
+    posicion += ID_BYTES
+
+    nombre = registro[posicion:posicion + NOMBRE_BYTES].decode("utf-8").strip()
+    posicion += NOMBRE_BYTES
+
+    telefono = registro[posicion:posicion + TELEFONO_BYTES].decode("utf-8").strip()
+    posicion += TELEFONO_BYTES
+
+    correo = registro[posicion:posicion + CORREO_BYTES].decode("utf-8").strip()
+    posicion += CORREO_BYTES
+
+    ciudad = registro[posicion:posicion + CIUDAD_BYTES].decode("utf-8").strip()
+
+    return Contacto(id, nombre, telefono, correo, ciudad)
