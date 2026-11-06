@@ -71,3 +71,14 @@ def convertir_a_contacto(registro):
     ciudad = registro[posicion:posicion + CIUDAD_BYTES].decode("utf-8").strip()
 
     return Contacto(id, nombre, telefono, correo, ciudad)
+
+def modificar_registro(numero_registro, contacto):
+    registro = convertir_a_bytes(contacto)
+
+    if registro is None:
+        return False
+
+    with open("datos/contactos.dat", "r+b") as archivo:
+        archivo.seek(numero_registro * TAMANIO_REGISTRO)
+        archivo.write(registro)
+        return True
