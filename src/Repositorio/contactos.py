@@ -1,3 +1,4 @@
+import os
 from src.Configuracion.constantes import *
 from src.Modelos.contactos import Contacto
 
@@ -81,4 +82,25 @@ def modificar_registro(numero_registro, contacto):
     with open("datos/contactos.dat", "r+b") as archivo:
         archivo.seek(numero_registro * TAMANIO_REGISTRO)
         archivo.write(registro)
+
         return True
+
+def obtener_todos_contactos():
+    contactos = []
+
+    if not os.path.exists("datos/contactos.dat"):
+        return contactos
+
+    tamanio = os.path.getsize("datos/contactos.dat")
+
+    if tamanio % TAMANIO_REGISTRO != 0:
+        return contactos
+
+    cantidad = tamanio // TAMANIO_REGISTRO
+
+    for numero in range(cantidad):
+        posicion, registro = leer_registro(numero)
+        contacto = convertir_a_contacto(registro)
+        contactos.append(contacto)
+
+    return contactos
