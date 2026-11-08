@@ -25,7 +25,13 @@ def guardar_indice(indice):
 def agregar_al_indice(id, numero_registro):
     indice = cargar_indice()
 
+    if indice is None:
+        return False
+
     if str(id) in indice:
+        return False
+
+    if not isinstance(numero_registro, int) or numero_registro < 0:
         return False
 
     indice[str(id)] = numero_registro
@@ -37,10 +43,16 @@ def agregar_al_indice(id, numero_registro):
 def buscar_por_id(id):
     indice = cargar_indice()
 
+    if indice is None:
+        return None
+
     if str(id) not in indice:
         return None
 
     numero_registro = indice[str(id)]
+
+    if not isinstance(numero_registro, int) or numero_registro < 0:
+        return None
 
     posicion, registro = leer_registro(numero_registro)
 

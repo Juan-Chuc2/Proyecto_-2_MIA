@@ -11,6 +11,9 @@ from src.Servicios.Integridad import guardar_hash
 def registrar_contacto(contacto):
     indice = cargar_indice()
 
+    if indice is None:
+        return False
+
     if str(contacto.id) in indice:
         return False
 
@@ -35,6 +38,9 @@ def registrar_contacto(contacto):
 
 def modificar_contacto(id, nombre, telefono, correo, ciudad):
     indice = cargar_indice()
+
+    if indice is None:
+        return False
 
     if str(id) not in indice:
         return False
