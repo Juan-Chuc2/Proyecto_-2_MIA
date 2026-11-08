@@ -2,7 +2,8 @@ import flet as ft
 from src.Modelos.contactos import Contacto
 from src.Servicios.contactos import registrar_contacto, modificar_contacto
 from src.Repositorio.indice import buscar_por_id
-
+from src.Reportes.exportarJson import exportar_json
+from src.Reportes.reportePDF import generar_pdf
 
 def ventana_principal(page: ft.Page):
     page.title, page.window.maximized = "Agenda de Contactos", True
@@ -10,6 +11,7 @@ def ventana_principal(page: ft.Page):
     mensaje, id_buscar, resultado_busqueda = ft.Text(), ft.TextField(label="ID del contacto"), ft.Text()
     id_modificar, nombre_modificar, telefono_modificar, correo_modificar, ciudad_modificar, mensaje_modificar = ft.TextField(label="ID del contacto"), ft.TextField(label="Nombre"), ft.TextField(label="Teléfono"), ft.TextField(label="Correo"), ft.TextField(label="Ciudad"), ft.Text()
     campos_modificar = [nombre_modificar, telefono_modificar, correo_modificar, ciudad_modificar]
+    mensaje_exportar = ft.Text()
 
     def guardar_contacto(e):
         campos = [id_c, nombre, telefono, correo, ciudad]
@@ -50,6 +52,18 @@ def ventana_principal(page: ft.Page):
         else: mensaje_modificar.value = "No se pudo modificar el contacto."
         page.update()
 
+    def exportar_contactos(e):
+        mensaje_exportar.value = "Contactos exportados correctamente a la carpeta  exportaciones, nombre del archivo:contactos.json" if exportar_json() else "No se pudieron exportar los contactos."
+        page.update()
+
+    def generar__pdf(e):
+        if generar_pdf():
+            mensaje_exportar.value = "Reporte PDF generado correctamente esta en carpeta: exportaciones archivo:reporte_contactos.pdf"
+        else:
+            mensaje_exportar.value = "No se pudo generar el reporte PDF."
+
+        page.update()
+
     formulario = ft.Column(controls=[ft.Text("AGREGAR CONTACTO", size=22, weight=ft.FontWeight.BOLD), id_c, nombre, telefono, correo, ciudad, ft.Button("Guardar contacto", on_click=guardar_contacto), mensaje], horizontal_alignment=ft.CrossAxisAlignment.CENTER, spacing=15, width=400, visible=False)
     formulario_busqueda = ft.Column(controls=[ft.Text("BUSCAR CONTACTO", size=22, weight=ft.FontWeight.BOLD), id_buscar, ft.Button("Buscar", on_click=buscar_contacto), resultado_busqueda], horizontal_alignment=ft.CrossAxisAlignment.CENTER, spacing=15, width=400, visible=False)
 
@@ -58,8 +72,14 @@ def ventana_principal(page: ft.Page):
 
     formulario_modificar = ft.Column(controls=[ft.Text("MODIFICAR CONTACTO", size=22, weight=ft.FontWeight.BOLD), id_modificar, ft.Button("Buscar", on_click=buscar_para_modificar), nombre_modificar, telefono_modificar, correo_modificar, ciudad_modificar, boton_guardar_cambios, mensaje_modificar],
     horizontal_alignment=ft.CrossAxisAlignment.CENTER, spacing=15, width=400, visible=False)
+    formulario_exportar = ft.Column(controls=[ft.Text("EXPORTAR CONTACTOS",size=22,weight=ft.FontWeight.BOLD),ft.Button("Exportar a JSON", on_click=exportar_contactos),
+    ft.Button("Generar reporte PDF", on_click=generar__pdf),mensaje_exportar],horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+    spacing=15,width=400,visible=False)
 
-    page.add(ft.Column(controls=[ft.Text("AGENDA DE CONTACTOS", size=28, weight=ft.FontWeight.BOLD, text_align=ft.TextAlign.CENTER), ft.Divider(), ft.Row(controls=[ft.Button("Contactos", on_click=lambda _: setattr(formulario, "visible", True) or setattr(formulario_busqueda, "visible", False) or setattr(formulario_modificar,
-    "visible", False) or page.update()), ft.Button("Buscar contacto", on_click=lambda _: setattr(formulario, "visible", False) or setattr(formulario_busqueda, "visible", True) or setattr(formulario_modificar, "visible", False) or page.update()), ft.Button("Modificar contacto",
-    on_click=lambda _: setattr(formulario, "visible", False) or setattr(formulario_busqueda, "visible", False) or setattr(formulario_modificar, "visible", True) or page.update()), ft.Button("Exportar"), ft.Button("Herramientas"), ft.Button("Ayuda")], alignment=ft.MainAxisAlignment.CENTER, spacing=15, wrap=True), formulario,
-    formulario_busqueda, formulario_modificar], horizontal_alignment=ft.CrossAxisAlignment.CENTER, scroll=ft.ScrollMode.AUTO, expand=True))
+    def mostrar_seccion(seccion):
+        formulario.visible, formulario_busqueda.visible, formulario_modificar.visible, formulario_exportar.visible = seccion == "agregar", seccion == "buscar", seccion == "modificar", seccion == "exportar"
+        page.update()
+
+    page.add(ft.Column(controls=[ft.Text("AGENDA DE CONTACTOS", size=28, weight=ft.FontWeight.BOLD, text_align=ft.TextAlign.CENTER), ft.Divider(), ft.Row(controls=[ft.Button("Contactos", on_click=lambda _: mostrar_seccion("agregar")), ft.Button("Buscar contacto", on_click=lambda _: mostrar_seccion("buscar")),
+    ft.Button("Modificar contacto", on_click=lambda _: mostrar_seccion("modificar")), ft.Button("Exportar", on_click=lambda _: mostrar_seccion("exportar")), ft.Button("Herramientas"), ft.Button("Ayuda")], alignment=ft.MainAxisAlignment.CENTER, spacing=15, wrap=True), formulario, formulario_busqueda, formulario_modificar, formulario_exportar],
+    horizontal_alignment=ft.CrossAxisAlignment.CENTER, scroll=ft.ScrollMode.AUTO, expand=True))
