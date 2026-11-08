@@ -89,21 +89,27 @@ def ventana_principal(page: ft.Page):
         except OSError: mensaje_informacion.value = "Error al obtener la información del archivo."
         page.update()
 
-    formulario = ft.Column(controls=[ft.Text("AGREGAR CONTACTO", size=22, weight=ft.FontWeight.BOLD), id_c, nombre, telefono, correo, ciudad, ft.Button("Guardar contacto", on_click=guardar_contacto), mensaje], horizontal_alignment=ft.CrossAxisAlignment.CENTER, spacing=15, width=400, visible=False)
+    formulario = ft.Column(controls=[ft.Text("AGREGAR CONTACTO", size=22, weight=ft.FontWeight.BOLD), id_c, nombre, telefono, correo, ciudad, ft.Button("Guardar contacto", on_click=guardar_contacto), mensaje],
+    horizontal_alignment=ft.CrossAxisAlignment.CENTER, spacing=15, width=400, visible=False)
+
     formulario_busqueda = ft.Column(controls=[ft.Text("BUSCAR CONTACTO", size=22, weight=ft.FontWeight.BOLD), id_buscar, ft.Button("Buscar", on_click=buscar_contacto), resultado_busqueda], horizontal_alignment=ft.CrossAxisAlignment.CENTER, spacing=15, width=400, visible=False)
 
     for campo in campos_modificar: campo.disabled = True
     boton_guardar_cambios = ft.Button("Guardar cambios", on_click=guardar_cambios, disabled=True)
 
-    formulario_modificar = ft.Column(controls=[ft.Text("MODIFICAR CONTACTO", size=22, weight=ft.FontWeight.BOLD), id_modificar, ft.Button("Buscar", on_click=buscar_para_modificar), nombre_modificar, telefono_modificar, correo_modificar, ciudad_modificar, boton_guardar_cambios, mensaje_modificar],
-    horizontal_alignment=ft.CrossAxisAlignment.CENTER, spacing=15, width=400, visible=False)
+    formulario_modificar = ft.Column(controls=[ft.Text("MODIFICAR CONTACTO", size=22, weight=ft.FontWeight.BOLD), id_modificar, ft.Button("Buscar", on_click=buscar_para_modificar), nombre_modificar, telefono_modificar, correo_modificar, ciudad_modificar, boton_guardar_cambios, mensaje_modificar], horizontal_alignment=ft.CrossAxisAlignment.CENTER, spacing=15, width=400, visible=False)
+
     formulario_exportar = ft.Column(controls=[ft.Text("EXPORTAR CONTACTOS", size=22, weight=ft.FontWeight.BOLD), ft.Button("Exportar a JSON", on_click=exportar_contactos), ft.Button("Generar reporte PDF", on_click=generar_reporte), mensaje_exportar], horizontal_alignment=ft.CrossAxisAlignment.CENTER, spacing=15, width=400, visible=False)
-    formulario_herramientas = ft.Column(controls=[ft.Text("HERRAMIENTAS", size=22, weight=ft.FontWeight.BOLD), ft.Button("Verificar integridad SHA-256", on_click=comprobar_integridad), mensaje_integridad, ft.Divider(), ft.Button("Crear respaldo ZIP", on_click=generar_respaldo),
-    mensaje_respaldo, ft.Divider(), ft.Button("Información del archivo (Metadatos)", on_click=mostrar_informacion), mensaje_informacion], horizontal_alignment=ft.CrossAxisAlignment.CENTER, spacing=15, width=400, visible=False)
+
+    formulario_herramientas = ft.Column(controls=[ft.Text("HERRAMIENTAS", size=22, weight=ft.FontWeight.BOLD), ft.Button("Verificar integridad SHA-256", on_click=comprobar_integridad), mensaje_integridad, ft.Divider(), ft.Button("Crear respaldo ZIP", on_click=generar_respaldo), mensaje_respaldo, ft.Divider(),
+    ft.Button("Información del archivo", on_click=mostrar_informacion), mensaje_informacion], horizontal_alignment=ft.CrossAxisAlignment.CENTER, spacing=15, width=400, visible=False)
+
+    formulario_ayuda = ft.Column(controls=[ft.Text("AYUDA", size=22, weight=ft.FontWeight.BOLD), ft.Text("Simulado")], horizontal_alignment=ft.CrossAxisAlignment.CENTER, spacing=15, width=400, visible=False)
 
     def mostrar_seccion(seccion):
-        formulario.visible, formulario_busqueda.visible, formulario_modificar.visible, formulario_exportar.visible, formulario_herramientas.visible = seccion == "agregar", seccion == "buscar", seccion == "modificar", seccion == "exportar", seccion == "herramientas"
+        formulario.visible, formulario_busqueda.visible, formulario_modificar.visible, formulario_exportar.visible, formulario_herramientas.visible, formulario_ayuda.visible = seccion == "agregar", seccion == "buscar", seccion == "modificar", seccion == "exportar", seccion == "herramientas", seccion == "ayuda"
         page.update()
 
     page.add(ft.Column(controls=[ft.Text("AGENDA DE CONTACTOS", size=28, weight=ft.FontWeight.BOLD, text_align=ft.TextAlign.CENTER), ft.Divider(), ft.Row(controls=[ft.Button("Contactos", on_click=lambda _: mostrar_seccion("agregar")), ft.Button("Buscar contacto", on_click=lambda _: mostrar_seccion("buscar")),
-    ft.Button("Modificar contacto", on_click=lambda _: mostrar_seccion("modificar")), ft.Button("Exportar", on_click=lambda _: mostrar_seccion("exportar")), ft.Button("Herramientas", on_click=lambda _: mostrar_seccion("herramientas")), ft.Button("Ayuda")], alignment=ft.MainAxisAlignment.CENTER, spacing=15, wrap=True), formulario, formulario_busqueda, formulario_modificar, formulario_exportar, formulario_herramientas], horizontal_alignment=ft.CrossAxisAlignment.CENTER, scroll=ft.ScrollMode.AUTO, expand=True))
+    ft.Button("Modificar contacto", on_click=lambda _: mostrar_seccion("modificar")), ft.Button("Exportar", on_click=lambda _: mostrar_seccion("exportar")), ft.Button("Herramientas", on_click=lambda _: mostrar_seccion("herramientas")), ft.Button("Ayuda", on_click=lambda _: mostrar_seccion("ayuda"))], alignment=ft.MainAxisAlignment.CENTER, spacing=15, wrap=True),
+    formulario, formulario_busqueda, formulario_modificar, formulario_exportar, formulario_herramientas, formulario_ayuda], horizontal_alignment=ft.CrossAxisAlignment.CENTER, scroll=ft.ScrollMode.AUTO, expand=True))
