@@ -6,8 +6,17 @@ def cargar_indice():
     if not os.path.exists("datos/indice.json"):
         return {}
 
-    with open("datos/indice.json", "r", encoding="utf-8") as archivo:
-        return json.load(archivo)
+    try:
+        with open("datos/indice.json", "r", encoding="utf-8") as archivo:
+            indice = json.load(archivo)
+
+        if not isinstance(indice, dict):
+            return None
+
+        return indice
+
+    except (OSError, UnicodeError, json.JSONDecodeError):
+        return None
 
 def guardar_indice(indice):
     with open("datos/indice.json", "w", encoding="utf-8") as archivo:
@@ -35,7 +44,7 @@ def buscar_por_id(id):
 
     posicion, registro = leer_registro(numero_registro)
 
-    if len(registro) == 0:
+    if registro is None:
         return None
 
     contacto = convertir_a_contacto(registro)
@@ -44,4 +53,3 @@ def buscar_por_id(id):
         return None
 
     return contacto
-

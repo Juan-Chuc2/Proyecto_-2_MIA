@@ -46,11 +46,22 @@ def guardar_contacto(contacto):
     return True
 
 def leer_registro(numero_registro):
+    if numero_registro < 0:
+        return None, None
+
+    if not os.path.exists("datos/contactos.dat"):
+        return None, None
+
     with open("datos/contactos.dat", "rb") as archivo:
-        archivo.seek(numero_registro * TAMANIO_REGISTRO)
+        archivo.seek(0, 2)
+        tamano = archivo.tell()
 
-        posicion = archivo.tell()
+        posicion = numero_registro * TAMANIO_REGISTRO
 
+        if posicion + TAMANIO_REGISTRO > tamano:
+            return None, None
+
+        archivo.seek(posicion)
         registro = archivo.read(TAMANIO_REGISTRO)
 
         return posicion, registro
@@ -80,12 +91,25 @@ def modificar_registro(numero_registro, contacto):
     if registro is None:
         return False
 
+    if numero_registro < 0:
+        return False
+
+    if not os.path.exists("datos/contactos.dat"):
+        return False
+
     with open("datos/contactos.dat", "r+b") as archivo:
-        archivo.seek(numero_registro * TAMANIO_REGISTRO)
+        archivo.seek(0, 2)
+        tamano = archivo.tell()
+
+        posicion = numero_registro * TAMANIO_REGISTRO
+
+        if posicion + TAMANIO_REGISTRO > tamano:
+            return False
+
+        archivo.seek(posicion)
         archivo.write(registro)
 
-        return True
-
+    return True
 def obtener_todos_contactos():
     contactos = []
 
