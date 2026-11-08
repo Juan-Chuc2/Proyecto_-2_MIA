@@ -5,6 +5,7 @@ from src.Repositorio.indice import cargar_indice, agregar_al_indice
 from src.Repositorio.contactos import modificar_registro
 from src.Repositorio.indice import buscar_por_id
 from src.Modelos.contactos import Contacto
+from src.Servicios.Integridad import guardar_hash
 
 
 def registrar_contacto(contacto):
@@ -26,7 +27,11 @@ def registrar_contacto(contacto):
     if not guardar_contacto(contacto):
         return False
 
-    return agregar_al_indice(contacto.id, numero_registro)
+    if not agregar_al_indice(contacto.id, numero_registro):
+        return False
+
+    guardar_hash()
+    return True
 
 def modificar_contacto(id, nombre, telefono, correo, ciudad):
     indice = cargar_indice()
@@ -43,4 +48,8 @@ def modificar_contacto(id, nombre, telefono, correo, ciudad):
 
     contacto = Contacto(id, nombre, telefono, correo, ciudad)
 
-    return modificar_registro(numero_registro, contacto)
+    if not modificar_registro(numero_registro, contacto):
+        return False
+
+    guardar_hash()
+    return True
