@@ -4,7 +4,7 @@ from src.Modelos.contactos import Contacto
 
 def convertir_a_bytes(contacto):
 
-    if not validar_tamanos(contacto):
+    if not validar_tamanios(contacto):
         return None
 
     id_bytes = str(contacto.id).encode("utf-8").ljust(ID_BYTES, b" ")
@@ -15,7 +15,8 @@ def convertir_a_bytes(contacto):
 
     return id_bytes + nombre_bytes + telefono_bytes + correo_bytes + ciudad_bytes
 
-def validar_tamanos(contacto):
+
+def validar_tamanios(contacto):
     if len(str(contacto.id).encode("utf-8")) > ID_BYTES:
         return False
 
