@@ -4,6 +4,10 @@ from src.Servicios.contactos import registrar_contacto, modificar_contacto
 from src.Repositorio.indice import buscar_por_id
 from src.Reportes.exportarJson import exportar_json
 from src.Reportes.reportePDF import generar_pdf
+from src.Servicios.Integridad import verificar_integridad
+from src.Servicios.Respaldos import crear_respaldo, comparar_tamanios
+from src.Servicios.Informacion import obtener_informacion
+
 
 def ventana_principal(page: ft.Page):
     page.title, page.window.maximized = "Agenda de Contactos", True
@@ -11,7 +15,7 @@ def ventana_principal(page: ft.Page):
     mensaje, id_buscar, resultado_busqueda = ft.Text(), ft.TextField(label="ID del contacto"), ft.Text()
     id_modificar, nombre_modificar, telefono_modificar, correo_modificar, ciudad_modificar, mensaje_modificar = ft.TextField(label="ID del contacto"), ft.TextField(label="Nombre"), ft.TextField(label="Teléfono"), ft.TextField(label="Correo"), ft.TextField(label="Ciudad"), ft.Text()
     campos_modificar = [nombre_modificar, telefono_modificar, correo_modificar, ciudad_modificar]
-    mensaje_exportar = ft.Text()
+    mensaje_exportar, mensaje_integridad, mensaje_respaldo, mensaje_informacion = ft.Text(), ft.Text(), ft.Text(), ft.Text()
 
     def guardar_contacto(e):
         campos = [id_c, nombre, telefono, correo, ciudad]
@@ -20,7 +24,7 @@ def ventana_principal(page: ft.Page):
         elif registrar_contacto(Contacto(int(id_c.value), nombre.value, telefono.value, correo.value, ciudad.value)):
             mensaje.value = "Contacto registrado correctamente."
             for c in campos: c.value = ""
-        else: mensaje.value = "Error No se pudo registrar, verifique el ID y tamaños permitidos."
+        else: mensaje.value = "No se pudo registrar, verifique el ID y tamaños permitidos."
         page.update()
 
     def buscar_contacto(e):
@@ -53,15 +57,36 @@ def ventana_principal(page: ft.Page):
         page.update()
 
     def exportar_contactos(e):
-        mensaje_exportar.value = "Contactos exportados correctamente a la carpeta  exportaciones, nombre del archivo:contactos.json" if exportar_json() else "No se pudieron exportar los contactos."
+        mensaje_exportar.value = "Contactos exportados correctamente en exportaciones/contactos.json" if exportar_json() else "No se pudieron exportar los contactos."
         page.update()
 
-    def generar__pdf(e):
-        if generar_pdf():
-            mensaje_exportar.value = "Reporte PDF generado correctamente esta en carpeta: exportaciones archivo:reporte_contactos.pdf"
-        else:
-            mensaje_exportar.value = "No se pudo generar el reporte PDF."
+    def generar_reporte(e):
+        mensaje_exportar.value = "Reporte PDF generado correctamente en exportaciones/reporte_contactos.pdf" if generar_pdf() else "No se pudo generar el reporte PDF."
+        page.update()
 
+    def comprobar_integridad(e):
+        try:
+            mensaje_integridad.value = "Integridad correcta. El archivo coincide con su SHA-256." if verificar_integridad() else "Advertencia: No se pudo verificar la integridad."
+        except (OSError, ValueError): mensaje_integridad.value = "Error al leer los archivos de integridad."
+        page.update()
+
+    def generar_respaldo(e):
+        try:
+            if crear_respaldo():
+                original, comprimido, diferencia = comparar_tamanios()
+                mensaje_respaldo.value = f"Respaldo creado correctamente en respaldos/respaldo_contactos.zip\nTamaño original: {original} bytes\nTamaño comprimido: {comprimido} bytes\nDiferencia: {diferencia} bytes"
+            else: mensaje_respaldo.value = "No se pudo crear el respaldo."
+        except (OSError, ValueError): mensaje_respaldo.value = "Error al crear el respaldo o comparar los tamaños."
+        page.update()
+
+    def mostrar_informacion(e):
+        try:
+            informacion = obtener_informacion()
+            if informacion is None: mensaje_informacion.value = "No se encontró el archivo contactos.dat."
+            else:
+                tamano, fecha, lectura, escritura = informacion
+                mensaje_informacion.value = f"Tamaño: {tamano} bytes\nÚltima modificación: {fecha}\nPermiso de lectura: {'Sí' if lectura else 'No'}\nPermiso de escritura: {'Sí' if escritura else 'No'}"
+        except OSError: mensaje_informacion.value = "Error al obtener la información del archivo."
         page.update()
 
     formulario = ft.Column(controls=[ft.Text("AGREGAR CONTACTO", size=22, weight=ft.FontWeight.BOLD), id_c, nombre, telefono, correo, ciudad, ft.Button("Guardar contacto", on_click=guardar_contacto), mensaje], horizontal_alignment=ft.CrossAxisAlignment.CENTER, spacing=15, width=400, visible=False)
@@ -72,14 +97,13 @@ def ventana_principal(page: ft.Page):
 
     formulario_modificar = ft.Column(controls=[ft.Text("MODIFICAR CONTACTO", size=22, weight=ft.FontWeight.BOLD), id_modificar, ft.Button("Buscar", on_click=buscar_para_modificar), nombre_modificar, telefono_modificar, correo_modificar, ciudad_modificar, boton_guardar_cambios, mensaje_modificar],
     horizontal_alignment=ft.CrossAxisAlignment.CENTER, spacing=15, width=400, visible=False)
-    formulario_exportar = ft.Column(controls=[ft.Text("EXPORTAR CONTACTOS",size=22,weight=ft.FontWeight.BOLD),ft.Button("Exportar a JSON", on_click=exportar_contactos),
-    ft.Button("Generar reporte PDF", on_click=generar__pdf),mensaje_exportar],horizontal_alignment=ft.CrossAxisAlignment.CENTER,
-    spacing=15,width=400,visible=False)
+    formulario_exportar = ft.Column(controls=[ft.Text("EXPORTAR CONTACTOS", size=22, weight=ft.FontWeight.BOLD), ft.Button("Exportar a JSON", on_click=exportar_contactos), ft.Button("Generar reporte PDF", on_click=generar_reporte), mensaje_exportar], horizontal_alignment=ft.CrossAxisAlignment.CENTER, spacing=15, width=400, visible=False)
+    formulario_herramientas = ft.Column(controls=[ft.Text("HERRAMIENTAS", size=22, weight=ft.FontWeight.BOLD), ft.Button("Verificar integridad SHA-256", on_click=comprobar_integridad), mensaje_integridad, ft.Divider(), ft.Button("Crear respaldo ZIP", on_click=generar_respaldo),
+    mensaje_respaldo, ft.Divider(), ft.Button("Información del archivo (Metadatos)", on_click=mostrar_informacion), mensaje_informacion], horizontal_alignment=ft.CrossAxisAlignment.CENTER, spacing=15, width=400, visible=False)
 
     def mostrar_seccion(seccion):
-        formulario.visible, formulario_busqueda.visible, formulario_modificar.visible, formulario_exportar.visible = seccion == "agregar", seccion == "buscar", seccion == "modificar", seccion == "exportar"
+        formulario.visible, formulario_busqueda.visible, formulario_modificar.visible, formulario_exportar.visible, formulario_herramientas.visible = seccion == "agregar", seccion == "buscar", seccion == "modificar", seccion == "exportar", seccion == "herramientas"
         page.update()
 
     page.add(ft.Column(controls=[ft.Text("AGENDA DE CONTACTOS", size=28, weight=ft.FontWeight.BOLD, text_align=ft.TextAlign.CENTER), ft.Divider(), ft.Row(controls=[ft.Button("Contactos", on_click=lambda _: mostrar_seccion("agregar")), ft.Button("Buscar contacto", on_click=lambda _: mostrar_seccion("buscar")),
-    ft.Button("Modificar contacto", on_click=lambda _: mostrar_seccion("modificar")), ft.Button("Exportar", on_click=lambda _: mostrar_seccion("exportar")), ft.Button("Herramientas"), ft.Button("Ayuda")], alignment=ft.MainAxisAlignment.CENTER, spacing=15, wrap=True), formulario, formulario_busqueda, formulario_modificar, formulario_exportar],
-    horizontal_alignment=ft.CrossAxisAlignment.CENTER, scroll=ft.ScrollMode.AUTO, expand=True))
+    ft.Button("Modificar contacto", on_click=lambda _: mostrar_seccion("modificar")), ft.Button("Exportar", on_click=lambda _: mostrar_seccion("exportar")), ft.Button("Herramientas", on_click=lambda _: mostrar_seccion("herramientas")), ft.Button("Ayuda")], alignment=ft.MainAxisAlignment.CENTER, spacing=15, wrap=True), formulario, formulario_busqueda, formulario_modificar, formulario_exportar, formulario_herramientas], horizontal_alignment=ft.CrossAxisAlignment.CENTER, scroll=ft.ScrollMode.AUTO, expand=True))
