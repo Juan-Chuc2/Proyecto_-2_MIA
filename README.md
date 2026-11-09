@@ -155,4 +155,4 @@ Además, la integración de SHA-256 y los respaldos ZIP permitió incorporar mec
 En conjunto, el proyecto demuestra cómo implementar un sistema de administración de contactos utilizando archivos binarios y una interfaz gráfica en Python.
 
 ## Documentacion
-[!Documentacion Tecnica](https://github.com/Juan-Chuc2/Proyecto_-2_MIA/blob/main/Manual%20tecnico%20MA.pdf)
+[Documentacion Tecnica](https://github.com/Juan-Chuc2/Proyecto_-2_MIA/blob/main/Manual%20tecnico%20MA.pdf)
