@@ -1,12 +1,11 @@
-import json
 import os
 from datetime import datetime
 from reportlab.pdfgen import canvas
+from src.Repositorio.contactos import obtener_todos_contactos
 
 
 def generar_pdf():
-    with open("exportaciones/contactos.json", "r", encoding="utf-8") as archivo:
-        contactos = json.load(archivo)
+    contactos = obtener_todos_contactos()
 
     os.makedirs("exportaciones", exist_ok=True)
 
@@ -28,11 +27,11 @@ def generar_pdf():
             pdf.setFont("Helvetica", 11)
             y = 790
 
-        pdf.drawString(50, y, f"ID: {contacto['id']}")
-        pdf.drawString(50, y - 20, f"Nombre: {contacto['nombre']}")
-        pdf.drawString(50, y - 40, f"Telefono: {contacto['telefono']}")
-        pdf.drawString(50, y - 60, f"Correo: {contacto['correo']}")
-        pdf.drawString(50, y - 80, f"Ciudad: {contacto['ciudad']}")
+        pdf.drawString(50, y, f"ID: {contacto.id}")
+        pdf.drawString(50, y - 20, f"Nombre: {contacto.nombre}")
+        pdf.drawString(50, y - 40, f"Telefono: {contacto.telefono}")
+        pdf.drawString(50, y - 60, f"Correo: {contacto.correo}")
+        pdf.drawString(50, y - 80, f"Ciudad: {contacto.ciudad}")
 
         y -= 120
 
