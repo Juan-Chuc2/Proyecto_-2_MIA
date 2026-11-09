@@ -1,3 +1,4 @@
+
 import flet as ft
 from src.Modelos.contactos import Contacto
 from src.Servicios.contactos import registrar_contacto, modificar_contacto
@@ -11,6 +12,10 @@ from src.Servicios.Informacion import obtener_informacion
 
 def ventana_principal(page: ft.Page):
     page.title, page.window.maximized = "Agenda de Contactos", True
+    page.padding, page.spacing, page.theme_mode = 0, 0, ft.ThemeMode.LIGHT
+
+    azul, fondo, blanco = "#5298D3", "#F7FAFC", "#FFFFFF"
+
     id_c, nombre, telefono, correo, ciudad = ft.TextField(label="ID"), ft.TextField(label="Nombre"), ft.TextField(label="Teléfono"), ft.TextField(label="Correo"), ft.TextField(label="Ciudad")
     mensaje, id_buscar, resultado_busqueda = ft.Text(), ft.TextField(label="ID del contacto"), ft.Text()
     id_modificar, nombre_modificar, telefono_modificar, correo_modificar, ciudad_modificar, mensaje_modificar = ft.TextField(label="ID del contacto"), ft.TextField(label="Nombre"), ft.TextField(label="Teléfono"), ft.TextField(label="Correo"), ft.TextField(label="Ciudad"), ft.Text()
@@ -106,10 +111,48 @@ def ventana_principal(page: ft.Page):
 
     formulario_ayuda = ft.Column(controls=[ft.Text("AYUDA", size=22, weight=ft.FontWeight.BOLD), ft.Text("Simulado")], horizontal_alignment=ft.CrossAxisAlignment.CENTER, spacing=15, width=400, visible=False)
 
+    formulario_inicio = ft.Column(controls=[ft.Icon(ft.Icons.CONTACT_PAGE, size=55, color="#98A4B3"), ft.Text("Bienvenido a la Agenda de Contactos", size=22, weight=ft.FontWeight.BOLD, text_align=ft.TextAlign.CENTER),
+    ft.Text("Seleccione una opcion en el menú lateral para comenzar.", size=13, color="#7D8793", text_align=ft.TextAlign.CENTER)], horizontal_alignment=ft.CrossAxisAlignment.CENTER, spacing=20)
+
+    tarjeta_inicio = ft.Container(content=formulario_inicio, bgcolor=blanco, border_radius=12, padding=45, width=430, visible=True)
+
+    titulo_seccion = ft.Text("INICIO", size=16, weight=ft.FontWeight.BOLD, color=ft.Colors.WHITE)
+    barra_superior = ft.Container(content=titulo_seccion, bgcolor=azul, padding=ft.Padding(20, 15, 20, 15), border_radius=5)
+
+    botones_contactos = ft.Row(controls=[ft.Button("Agregar contacto", on_click=lambda _: mostrar_seccion("agregar")), ft.Button("Buscar contacto", on_click=lambda _: mostrar_seccion("buscar")),
+    ft.Button("Modificar contacto", on_click=lambda _: mostrar_seccion("modificar"))], alignment=ft.MainAxisAlignment.CENTER, spacing=12, wrap=True, visible=False)
+
+    contenido = ft.Column(controls=[tarjeta_inicio, botones_contactos, formulario, formulario_busqueda, formulario_modificar, formulario_exportar, formulario_herramientas, formulario_ayuda],
+    horizontal_alignment=ft.CrossAxisAlignment.CENTER, spacing=25, scroll=ft.ScrollMode.AUTO, expand=True)
+
     def mostrar_seccion(seccion):
         formulario.visible, formulario_busqueda.visible, formulario_modificar.visible, formulario_exportar.visible, formulario_herramientas.visible, formulario_ayuda.visible = seccion == "agregar", seccion == "buscar", seccion == "modificar", seccion == "exportar", seccion == "herramientas", seccion == "ayuda"
+        tarjeta_inicio.visible = seccion == "inicio"
+        botones_contactos.visible = seccion in ["contactos", "agregar", "buscar", "modificar"]
+
+        if seccion == "inicio": titulo_seccion.value = "INICIO"
+        elif seccion in ["contactos", "agregar", "buscar", "modificar"]: titulo_seccion.value = "CONTACTOS"
+        elif seccion == "exportar": titulo_seccion.value = "EXPORTAR"
+        elif seccion == "herramientas": titulo_seccion.value = "HERRAMIENTAS"
+        elif seccion == "ayuda": titulo_seccion.value = "AYUDA"
+
         page.update()
 
-    page.add(ft.Column(controls=[ft.Text("AGENDA DE CONTACTOS", size=28, weight=ft.FontWeight.BOLD, text_align=ft.TextAlign.CENTER), ft.Divider(), ft.Row(controls=[ft.Button("Contactos", on_click=lambda _: mostrar_seccion("agregar")), ft.Button("Buscar contacto", on_click=lambda _: mostrar_seccion("buscar")),
-    ft.Button("Modificar contacto", on_click=lambda _: mostrar_seccion("modificar")), ft.Button("Exportar", on_click=lambda _: mostrar_seccion("exportar")), ft.Button("Herramientas", on_click=lambda _: mostrar_seccion("herramientas")), ft.Button("Ayuda", on_click=lambda _: mostrar_seccion("ayuda"))], alignment=ft.MainAxisAlignment.CENTER, spacing=15, wrap=True),
-    formulario, formulario_busqueda, formulario_modificar, formulario_exportar, formulario_herramientas, formulario_ayuda], horizontal_alignment=ft.CrossAxisAlignment.CENTER, scroll=ft.ScrollMode.AUTO, expand=True))
+    def boton_lateral(texto, icono, seccion):
+        return ft.Button(texto, icon=icono, width=190, height=45, on_click=lambda _: mostrar_seccion(seccion))
+
+    panel_lateral = ft.Container(content=ft.Column(controls=[
+        ft.Container(content=ft.Text("Agenda de Contactos", size=18, weight=ft.FontWeight.BOLD, color=azul, text_align=ft.TextAlign.CENTER),
+        bgcolor="#E3EBF1", border_radius=10, padding=12, on_click=lambda _: mostrar_seccion("inicio")),
+        ft.Divider(height=35),
+        boton_lateral("CONTACTOS", ft.Icons.PERSON, "contactos"),
+        boton_lateral("EXPORTAR", ft.Icons.DOWNLOAD, "exportar"),
+        boton_lateral("HERRAMIENTAS", ft.Icons.BUILD, "herramientas"),
+        boton_lateral("AYUDA", ft.Icons.HELP, "ayuda")
+    ], horizontal_alignment=ft.CrossAxisAlignment.CENTER, spacing=15, expand=True),
+    width=240, padding=20, bgcolor=fondo, border=ft.Border(right=ft.BorderSide(1, "#D7E0E7")))
+
+    panel_principal = ft.Container(content=ft.Column(controls=[barra_superior, ft.Container(content=contenido, alignment=ft.Alignment(0, -1), padding=ft.Padding(0, 40, 0, 0), expand=True)],
+    spacing=0, expand=True), bgcolor=fondo, padding=12, expand=True)
+
+    page.add(ft.Row(controls=[panel_lateral, panel_principal], spacing=0, expand=True, vertical_alignment=ft.CrossAxisAlignment.STRETCH))
