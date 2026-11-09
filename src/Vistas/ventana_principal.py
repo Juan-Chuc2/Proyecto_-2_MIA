@@ -71,8 +71,9 @@ def ventana_principal(page: ft.Page):
 
     def comprobar_integridad(e):
         try:
-            mensaje_integridad.value = "Integridad correcta. El archivo coincide con su SHA-256." if verificar_integridad() else "Advertencia: No se pudo verificar la integridad."
-        except (OSError, ValueError): mensaje_integridad.value = "Error al leer los archivos de integridad."
+            if verificar_integridad(): mensaje_integridad.value = "Integridad correcta. El archivo no ha sido modificado externamente."
+            else: mensaje_integridad.value = "El archivo fue modificado externamente o de forma manual, no desde el sistema."
+        except (OSError, ValueError): mensaje_integridad.value = "No fue posible leer el archivo o su referencia SHA-256."
         page.update()
 
     def generar_respaldo(e):
